@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import static org.fusesource.leveldbjni.JniDBFactory.*;
 
-public class SnappyDB {
+public class SnappyDB implements AbstractSnappyDB {
     private DB db;
     //TODO close DB on completion
     private SnappyDB (final Context context) throws IOException{
@@ -21,12 +21,12 @@ public class SnappyDB {
         db.close();
     }
 
-    public static Observable<SnappyDB> create(final Context context) {
-        return Observable.create(new Observable.OnSubscribe<SnappyDB>() {
+    public static Observable<AbstractSnappyDB> create(final Context context) {
+        return Observable.create(new Observable.OnSubscribe<AbstractSnappyDB>() {
             SnappyDB s;
 
             @Override
-            public void call(final Subscriber<? super SnappyDB> subscriber) {
+            public void call(final Subscriber<? super AbstractSnappyDB> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
                     try {
                         if (!subscriber.isUnsubscribed()) {
@@ -43,7 +43,22 @@ public class SnappyDB {
         });
     }
 
-    public void print(String str) {
-        System.out.println(str);
+    @Override
+    public Observable<AbstractSnappyDB> put(String key, String value) {
+        this.db.put(bytes(key), bytes(value));
+        return Observable.just((AbstractSnappyDB)this);
+    }
+
+    @Override
+    public Observable<String> get(String key) {
+        String value = new String(this.db.get(bytes(key)));
+        if(value != null) {
+            return Observable.just(value);
+        }
+        else {
+            return Observable.error(new KeyNotFoundException(key));
+        }
     }
 }
+
+//TODO Streaming??!
