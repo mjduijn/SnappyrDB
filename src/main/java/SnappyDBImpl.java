@@ -1,3 +1,4 @@
+import com.esotericsoftware.kryo.Kryo;
 import org.iq80.leveldb.*;
 import rx.Observable;
 import rx.Subscriber;
@@ -9,9 +10,12 @@ import static org.fusesource.leveldbjni.JniDBFactory.*;
 
 public class SnappyDBImpl implements SnappyDB {
     private DB db;
+    private Kryo kryo;
     //TODO close DB on completion
+
     private SnappyDBImpl(final Context context) throws IOException{
         db = factory.open(new File(context.getPath()), context.getOptions());
+        kryo = new Kryo();
     }
 
     private void close() throws IOException {
@@ -59,6 +63,17 @@ public class SnappyDBImpl implements SnappyDB {
         }
         else {
             return Observable.error(new KeyNotFoundException(key));
+        }
+    }
+
+    @Override
+    public Observable<SnappyDB> del(String key) {
+        try {
+            this.db.delete(bytes(key));
+            return Observable.just((SnappyDB)this);
+        }
+        catch(DBException e) {
+            return Observable.error(e);
         }
     }
 }

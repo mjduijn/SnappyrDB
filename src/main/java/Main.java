@@ -10,9 +10,10 @@ public class Main {
 
         SnappyDBImpl
         .create(new Context())
-                .doOnNext(new Action1<SnappyDB>() {
-                    public void call(SnappyDB s) {
-                        s.put("Tester", "TesterValue");
+                .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
+                    @Override
+                    public Observable<SnappyDB> call(SnappyDB s) {
+                        return s.put("Tester", "TesterValue");
                     }
                 })
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
@@ -24,7 +25,7 @@ public class Main {
                 .flatMap(new Func1<SnappyDB, Observable<String>>() {
                     @Override
                     public Observable<String> call(SnappyDB s) {
-                        return s.get("Testeabr");
+                        return s.get("Tester");
                     }
                 })
                 .subscribe(new Observer<String>(){

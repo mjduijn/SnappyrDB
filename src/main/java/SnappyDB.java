@@ -15,4 +15,6 @@ public interface SnappyDB {
     public Observable<SnappyDB> put(String key, String value);
 
     public Observable<String> get(String key);
+
+    public Observable<SnappyDB> del(String key);
 }
