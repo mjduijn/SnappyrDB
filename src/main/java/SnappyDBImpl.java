@@ -42,8 +42,13 @@ public class SnappyDBImpl implements SnappyDB {
 
     @Override
     public Observable<SnappyDB> put(String key, String value) {
-        this.db.put(bytes(key), bytes(value));
-        return Observable.just((SnappyDB)this);
+        try {
+            this.db.put(bytes(key), bytes(value));
+            return Observable.just((SnappyDB)this);
+        }
+        catch(DBException e) {
+            return Observable.error(e);
+        }
     }
 
     @Override
