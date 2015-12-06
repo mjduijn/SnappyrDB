@@ -8,22 +8,22 @@ public class Main {
     {
         System.out.println("Running main");
 
-        SnappyDB
+        SnappyDBImpl
         .create(new Context())
-                .doOnNext(new Action1<AbstractSnappyDB>() {
-                    public void call(AbstractSnappyDB s) {
+                .doOnNext(new Action1<SnappyDB>() {
+                    public void call(SnappyDB s) {
                         s.put("Tester", "TesterValue");
                     }
                 })
-                .flatMap(new Func1<AbstractSnappyDB, Observable<AbstractSnappyDB>>() {
+                .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
                     @Override
-                    public Observable<AbstractSnappyDB> call(AbstractSnappyDB s) {
+                    public Observable<SnappyDB> call(SnappyDB s) {
                         return s.put("Tester2", "Tester2Value");
                     }
                 })
-                .flatMap(new Func1<AbstractSnappyDB, Observable<String>>() {
+                .flatMap(new Func1<SnappyDB, Observable<String>>() {
                     @Override
-                    public Observable<String> call(AbstractSnappyDB s) {
+                    public Observable<String> call(SnappyDB s) {
                         return s.get("Testeabr");
                     }
                 })
