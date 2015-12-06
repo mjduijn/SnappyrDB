@@ -2,6 +2,7 @@ import org.iq80.leveldb.*;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 import java.io.File;
@@ -33,7 +34,9 @@ public class SnappyDB {
                             subscriber.onNext(s);
                         }
                     } catch (IOException e) {
-                        subscriber.onError(e);
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onError(e);
+                        }
                     }
                 }
             }
