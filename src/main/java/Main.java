@@ -8,8 +8,9 @@ public class Main {
     {
         System.out.println("Running main");
 
-        SnappyDBImpl
-        .create(new Context())
+        Observable<SnappyDB> snappy = SnappyDBImpl.create(new Context());
+
+        snappy
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
                     @Override
                     public Observable<SnappyDB> call(SnappyDB s) {
@@ -22,10 +23,28 @@ public class Main {
                         return s.put("Tester2", "Tester2Value");
                     }
                 })
+                .doOnNext(new Action1<SnappyDB>() {
+                    @Override
+                    public void call(SnappyDB s) {
+                        s.put("T1", "Tester2Value");
+                        s.dummy();
+//                        s.del("T1");
+//                        assert (s.exists("T1") == false);
+                    }
+                })
+
+//                .flatMap(new Func1<SnappyDB, Observable<String>>() {
+//                    @Override
+//                    public Observable<String> call(SnappyDB s) {
+//                        return s.get("Tester");
+//                    }
+//                })
+
                 .flatMap(new Func1<SnappyDB, Observable<String>>() {
                     @Override
                     public Observable<String> call(SnappyDB s) {
-                        return s.get("Tester");
+                        s.put("T1", "Tester2Value");
+                        return s.getAllKey();
                     }
                 })
                 .subscribe(new Observer<String>(){
@@ -43,6 +62,8 @@ public class Main {
                         System.out.println("Reactive snappy is completed!");
                     }
                 });
+
+
 //                .subscribe(new Observer<AbstractSnappyDB>(){
 //                    @Override
 //                    public void onNext(AbstractSnappyDB snappyDB) {
@@ -58,5 +79,6 @@ public class Main {
 //                        System.out.println("Reactive snappy is completed!");
 //                    }
 //                });
+
     }
 }
