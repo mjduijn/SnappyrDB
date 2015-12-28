@@ -111,17 +111,12 @@ public class SnappyDBImpl implements SnappyDB {
 
     public Observable<Map.Entry<String, byte[]>> getAllKeyValue(final Func2<String, byte[], Boolean> p2) {
         return Observable.create(new OnSubscribeFromSnappyDb(db))
-                .map(new Func1<Map.Entry<byte[], byte[]>, Map.Entry<String, byte[]>>() {
+                .flatMap(new Func1<Map.Entry<byte[], byte[]>, Observable<Map.Entry<String, byte[]>>>() {
                     @Override
-                    public Map.Entry<String, byte[]> call(Map.Entry<byte[], byte[]> entry) {
-                        return new AbstractMap.SimpleEntry<>(new String(entry.getKey()), entry.getValue());
-                    }
-                })
-                .flatMap(new Func1<Map.Entry<String, byte[]>, Observable<Map.Entry<String, byte[]>>>() {
-                    @Override
-                    public Observable<Map.Entry<String, byte[]>> call(Map.Entry<String, byte[]> e) {
-                        if(p2.call(e.getKey(), e.getValue())) {
-                            return Observable.just(e);
+                    public Observable<Map.Entry<String, byte[]>> call(Map.Entry<byte[], byte[]> e) {
+                        String key = new String(e.getKey());
+                        if(p2.call(key, e.getValue())) {
+                            return Observable.just((Map.Entry<String, byte[]>) new AbstractMap.SimpleEntry<>(key, e.getValue()));
                         }
                         else {
                             return Observable.empty();
@@ -129,7 +124,7 @@ public class SnappyDBImpl implements SnappyDB {
                     }
                 })
                 ;
-    } //TODO filter first
+    }
 
     public Observable<Map.Entry<String, byte[]>> getAllKeyValue(final Func1<String, Boolean> p) {
         return getAllKeyValue(new Func2<String, byte[], Boolean> () {
@@ -150,17 +145,21 @@ public class SnappyDBImpl implements SnappyDB {
     }
 
     @Override
-    public Observable<String> getAllKey(Func1<String, Boolean> p) {
-        return getAllKeyValue()
-                .map(new Func1<Map.Entry<String, byte[]>, String>() {
-                    @Override
-                    public String call(Map.Entry<String, byte[]> entry) {
-                        return entry.getKey();
-                    }
-                })
-                .filter(p)
-                ;
-    } //TODO filter before map
+    public Observable<String> getAllKey(final Func1<String, Boolean> p) {
+
+        return getAllKeyValue(new Func1<String, Boolean>() {
+                                  @Override
+                                  public Boolean call(String s) {
+                                      return p.call(s);
+                                  }
+        })
+        .map(new Func1<Map.Entry<String, byte[]>, String>() {
+            @Override
+            public String call(Map.Entry<String, byte[]> entry) {
+                return entry.getKey();
+            }
+        });
+    }
 
     @Override
     public Observable<String> getAllKey() {
