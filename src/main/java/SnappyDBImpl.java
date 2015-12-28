@@ -1,6 +1,4 @@
 import com.esotericsoftware.kryo.Kryo;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import javafx.util.Pair;
 import org.iq80.leveldb.*;
 import rx.Observable;
 import rx.Observer;
@@ -28,6 +26,11 @@ public class SnappyDBImpl implements SnappyDB {
 
     private void close() throws IOException {
         db.close();
+    }
+
+    public void dummy() {
+        //DUmmy method for testing!
+        System.out.println("Dummy!");
     }
 
     public static Observable<SnappyDB> create(final Context context) {
@@ -106,65 +109,25 @@ public class SnappyDBImpl implements SnappyDB {
         }
     }
 
-    public void dummy() {
-        DBIterator iterator = db.iterator();
-        try {
-            for(iterator.seekToFirst(); iterator.hasNext(); iterator.next()) {
-                String key = asString(iterator.peekNext().getKey());
-                String value = asString(iterator.peekNext().getValue());
-                System.out.println(key+" = "+value);
-            }
-        } finally {
-            try{
-                iterator.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        Observable.from(db)
-                .subscribe(new Observer<Map.Entry<byte[], byte[]>>(){
-                    @Override
-                    public void onNext(Map.Entry<byte[], byte[]> e) {
-                        System.out.println(new String(e.getKey()));
-                    }
-                    @Override
-                    public void onError(Throwable t) {
-                        System.out.println("Reactive snappy has encountered an error!");
-//                        t.printStackTrace();
-                    }
-                    @Override
-                    public void onCompleted() {
-                        System.out.println("Reactive snappy dummy is completed!");
-                    }
-                });
-    }
-
     public Observable<Map.Entry<String, byte[]>> getAllKeyValue(final Func2<String, byte[], Boolean> p2) {
-        return Observable.from(db)
+        return Observable.create(new OnSubscribeFromSnappyDb(db))
                 .map(new Func1<Map.Entry<byte[], byte[]>, Map.Entry<String, byte[]>>() {
                     @Override
                     public Map.Entry<String, byte[]> call(Map.Entry<byte[], byte[]> entry) {
                         return new AbstractMap.SimpleEntry<>(new String(entry.getKey()), entry.getValue());
                     }
                 })
-                .doOnNext(new Action1<Map.Entry<String, byte[]>>() {
+                .flatMap(new Func1<Map.Entry<String, byte[]>, Observable<Map.Entry<String, byte[]>>>() {
                     @Override
-                    public void call(Map.Entry<String, byte[]> stringEntry) {
-                        System.out.println(stringEntry.getValue());
+                    public Observable<Map.Entry<String, byte[]>> call(Map.Entry<String, byte[]> e) {
+                        if(p2.call(e.getKey(), e.getValue())) {
+                            return Observable.just(e);
+                        }
+                        else {
+                            return Observable.empty();
+                        }
                     }
                 })
-//                .flatMap(new Func1<Map.Entry<String, byte[]>, Observable<Map.Entry<String, byte[]>>>() {
-//                    @Override
-//                    public Observable<Map.Entry<String, byte[]>> call(Map.Entry<String, byte[]> e) {
-//                        if(p2.call(e.getKey(), e.getValue())) {
-//                            return Observable.just(e);
-//                        }
-//                        else {
-//                            return Observable.empty();
-//                        }
-//                    }
-//                })
                 ;
     } //TODO filter first
 
@@ -195,7 +158,7 @@ public class SnappyDBImpl implements SnappyDB {
                         return entry.getKey();
                     }
                 })
-//                .filter(p)
+                .filter(p)
                 ;
     } //TODO filter before map
 

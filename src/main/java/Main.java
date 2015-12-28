@@ -3,6 +3,8 @@ import rx.Observer;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
+import java.util.Map;
+
 public class Main {
     public static void main(String [] args)
     {
@@ -14,7 +16,7 @@ public class Main {
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
                     @Override
                     public Observable<SnappyDB> call(SnappyDB s) {
-                        return s.put("Tester", "TesterValue");
+                        return s.put("Tester1", "TesterValue");
                     }
                 })
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
@@ -28,40 +30,62 @@ public class Main {
                     public void call(SnappyDB s) {
                         s.put("T1", "Tester2Value");
                         s.dummy();
-//                        s.del("T1");
-//                        assert (s.exists("T1") == false);
+                        s.del("T1");
+                        assert (s.exists("T1") == false);
                     }
                 })
-
 //                .flatMap(new Func1<SnappyDB, Observable<String>>() {
 //                    @Override
 //                    public Observable<String> call(SnappyDB s) {
-//                        return s.get("Tester");
+//                        return s.getAllKey(new Func1<String, Boolean>() {
+//                            @Override
+//                            public Boolean call(String s) {
+//                                return s.equals("Tester1");
+//                            }
+//                        });
 //                    }
 //                })
-
-                .flatMap(new Func1<SnappyDB, Observable<String>>() {
+                .flatMap(new Func1<SnappyDB, Observable<Map.Entry<String, byte[]>>>() {
                     @Override
-                    public Observable<String> call(SnappyDB s) {
-                        s.put("T1", "Tester2Value");
-                        return s.getAllKey();
+                    public Observable<Map.Entry<String, byte[]>> call(SnappyDB s) {
+                        return s.getAllKeyValue(new Func1<String, Boolean>() {
+                            @Override
+                            public Boolean call(String s) {
+                                return s.equals("Tester1");
+                            }
+                        });
                     }
                 })
-                .subscribe(new Observer<String>(){
+                .subscribe(new Observer<Map.Entry<String, byte[]>>(){
                     @Override
-                    public void onNext(String s) {
-                        System.out.println(s);
+                    public void onNext(Map.Entry<String, byte[]> e) {
+                        System.out.println(e.getKey() + " = "  + new String(e.getValue()));
                     }
                     @Override
                     public void onError(Throwable t) {
                         System.out.println("Reactive snappy has encountered an error!");
-//                        t.printStackTrace();
+                        t.printStackTrace();
                     }
                     @Override
                     public void onCompleted() {
                         System.out.println("Reactive snappy is completed!");
                     }
                 });
+//                .subscribe(new Observer<String>(){
+//                @Override
+//                public void onNext(String s) {
+//                    System.out.println(s);
+//                }
+//                @Override
+//                public void onError(Throwable t) {
+//                    System.out.println("Reactive snappy has encountered an error!");
+//                    t.printStackTrace();
+//                }
+//                @Override
+//                public void onCompleted() {
+//                    System.out.println("Reactive snappy is completed!");
+//                }
+//            });
 
 
 //                .subscribe(new Observer<AbstractSnappyDB>(){
