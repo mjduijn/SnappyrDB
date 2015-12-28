@@ -11,7 +11,7 @@ public class Context {
     }
 
     public Context() {
-        this("default_db_path");
+        this("./");
     }
 
     public String getPath() {

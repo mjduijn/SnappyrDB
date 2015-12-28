@@ -4,4 +4,4 @@ build
 target
 AlternativeSnappyDB.iml
 .idea/
-
+default_db_name

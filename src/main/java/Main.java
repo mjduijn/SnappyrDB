@@ -16,7 +16,7 @@ public class Main {
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
                     @Override
                     public Observable<SnappyDB> call(SnappyDB s) {
-                        return s.put("Tester1", "TesterValue");
+                        return s.put("Tester1", "Tester1 first value");
                     }
                 })
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
@@ -103,6 +103,38 @@ public class Main {
 //                        System.out.println("Reactive snappy is completed!");
 //                    }
 //                });
+
+
+//        snappy
+//        .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
+//            @Override
+//            public Observable<SnappyDB> call(SnappyDB s) {
+//                s.put("Tester1", "Tester1 second value");
+//                System.out.println(s.get("Tester1"));
+//                return s.put("Tester1", "Tester1 second value");
+//            }
+//        })
+//        .flatMap(new Func1<SnappyDB, Observable<String>>() {
+//            @Override
+//            public Observable<String> call(SnappyDB s) {
+//                return s.getAllKey();
+//            }
+//        })
+//        .subscribe(new Observer<String>(){
+//            @Override
+//            public void onNext(String s) {
+//                System.out.println(s);
+//            }
+//            @Override
+//            public void onError(Throwable t) {
+//                System.out.println("2nd Reactive snappy has encountered an error!");
+//                t.printStackTrace();
+//            }
+//            @Override
+//            public void onCompleted() {
+//                System.out.println("Reactive snappy is completed!");
+//            }
+//        });
 
     }
 }

@@ -10,18 +10,33 @@ import rx.functions.Func2;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.fusesource.leveldbjni.JniDBFactory.*;
 
 public class SnappyDBImpl implements SnappyDB {
-    private DB db;
-    private Kryo kryo;
-    //TODO close DB on completion
 
-    private SnappyDBImpl(final Context context) throws IOException{
-        db = factory.open(new File(context.getPath()), context.getOptions());
-        kryo = new Kryo();
+    private static HashMap<String, DB> dbs = new HashMap<>();
+    private static Kryo kryo = new Kryo();
+
+    private DB db;
+    //TODO close DB on completion
+    //TODO factory class?
+
+    private SnappyDBImpl(Context context, String dbName) throws IOException {
+        File file = new File(context.getPath(), dbName);
+
+        if(!dbs.containsKey(file.getPath())) {
+            DB db = factory.open(file, context.getOptions());
+            dbs.put(file.getPath(), db);
+        }
+        this.db = dbs.get(file.getPath());
+    }
+
+    private SnappyDBImpl(Context context) throws IOException {
+        this(context, "default_db_name");
     }
 
     private void close() throws IOException {
@@ -29,7 +44,7 @@ public class SnappyDBImpl implements SnappyDB {
     }
 
     public void dummy() {
-        //DUmmy method for testing!
+        //Dummy method for testing
         System.out.println("Dummy!");
     }
 
@@ -41,14 +56,10 @@ public class SnappyDBImpl implements SnappyDB {
             public void call(final Subscriber<? super SnappyDB> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
                     try {
-                        if (!subscriber.isUnsubscribed()) {
-                            s = new SnappyDBImpl(context);
-                            subscriber.onNext(s);
-                        }
+                        s = new SnappyDBImpl(context);
+                        subscriber.onNext(s);
                     } catch (IOException e) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onError(e);
-                        }
+                        subscriber.onError(e);
                     }
                 }
             }
