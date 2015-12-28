@@ -3,6 +3,7 @@ import org.iq80.leveldb.*;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -58,6 +59,7 @@ public class SnappyDBImpl implements SnappyDB {
                     try {
                         s = new SnappyDBImpl(context);
                         subscriber.onNext(s);
+                        subscriber.onCompleted();
                     } catch (IOException e) {
                         subscriber.onError(e);
                     }
