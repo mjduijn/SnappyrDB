@@ -18,11 +18,15 @@ public interface SnappyDB {
         }
     }
 
-    public Observable<SnappyDB> put(String key, String value);
+//    public Observable<SnappyDB> put(String key, String value);
 
+//    public SnappyDB put(String key, String value);
+    public void put(String key, String value);
+    public Observable<SnappyDB> del(String key);
     public Observable<String> get(String key);
 
-    public Observable<SnappyDB> del(String key);
+    //public Observable<String> get(final Func1<String, Boolean> p); //TODO
+
 
     public boolean exists(String key);
 

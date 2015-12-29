@@ -23,8 +23,10 @@ public class SnappyDBImpl implements SnappyDB {
     private static Kryo kryo = new Kryo();
 
     private DB db;
+    private Observable<DB> db2;
     //TODO close DB on completion
     //TODO factory class?
+    //TODO finish chain with exec() call
 
     private SnappyDBImpl(Context context, String dbName) throws IOException {
         File file = new File(context.getPath(), dbName);
@@ -34,6 +36,7 @@ public class SnappyDBImpl implements SnappyDB {
             dbs.put(file.getPath(), db);
         }
         this.db = dbs.get(file.getPath());
+        this.db2 = Observable.just(dbs.get(file.getPath()));
     }
 
     private SnappyDBImpl(Context context) throws IOException {
@@ -47,6 +50,22 @@ public class SnappyDBImpl implements SnappyDB {
     public void dummy() {
         //Dummy method for testing
         System.out.println("Dummy!");
+        this.db2
+                .subscribe(new Observer<DB>(){
+                    @Override
+                    public void onNext(DB db) {
+                        System.out.println("Subscribing db");
+                    }
+                    @Override
+                    public void onError(Throwable t) {
+                        System.out.println("Reactive snappy has encountered an error!");
+                        t.printStackTrace();
+                    }
+                    @Override
+                    public void onCompleted() {
+                        System.out.println("Reactive snappy is completed!");
+                    }
+                });
     }
 
     public static Observable<SnappyDB> create(final Context context) {
@@ -69,15 +88,29 @@ public class SnappyDBImpl implements SnappyDB {
     }
 
     @Override
-    public Observable<SnappyDB> put(String key, String value) {
-        try {
-            this.db.put(bytes(key), bytes(value));
-            return Observable.just((SnappyDB)this);
-        }
-        catch(DBException e) {
-            return Observable.error(e);
-        }
+    public void put(String key, String value) throws DBException {
+        db.put(bytes(key), bytes(value));
     }
+
+    /*
+    //TODO research proper builder pattern
+    @Override
+    public SnappyDB put(final String key, final String value) {
+        this.db2 = this.db2.flatMap(new Func1<DB, Observable<DB>>() {
+            @Override
+            public Observable<DB> call(DB db) {
+                try {
+                    db.put(bytes(key), bytes(value));
+                    return Observable.just(db);
+                }
+                catch(DBException e) {
+                    return Observable.error(e);
+                }
+            }
+        });
+        return this;
+    }
+    */
 
     @Override
     public Observable<String> get(String key) {
