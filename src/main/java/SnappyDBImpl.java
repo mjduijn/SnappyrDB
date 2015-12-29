@@ -28,6 +28,12 @@ public class SnappyDBImpl implements SnappyDB {
     //TODO factory class?
     //TODO finish chain with exec() call
 
+    public class SnappyQuery extends Observable<SnappyDB> {
+        public SnappyQuery(Observable.OnSubscribe<SnappyDB> f) {
+            super(f);
+        }
+    }
+
     private SnappyDBImpl(Context context, String dbName) throws IOException {
         File file = new File(context.getPath(), dbName);
 
@@ -70,6 +76,25 @@ public class SnappyDBImpl implements SnappyDB {
 
     public static Observable<SnappyDB> create(final Context context) {
         return Observable.create(new Observable.OnSubscribe<SnappyDB>() {
+            SnappyDBImpl s;
+
+            @Override
+            public void call(final Subscriber<? super SnappyDB> subscriber) {
+                if (!subscriber.isUnsubscribed()) {
+                    try {
+                        s = new SnappyDBImpl(context);
+                        subscriber.onNext(s);
+                        subscriber.onCompleted();
+                    } catch (IOException e) {
+                        subscriber.onError(e);
+                    }
+                }
+            }
+        });
+    }
+
+    public static SnappyQuery createQuery(final Context context) {
+        return (SnappyQuery) Observable.create(new Observable.OnSubscribe<SnappyDB>() {
             SnappyDBImpl s;
 
             @Override

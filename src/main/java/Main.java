@@ -13,11 +13,23 @@ public class Main {
 
         Observable<SnappyDB> snappy = SnappyDBImpl.create(new Context());
 
-//        Observable foo = barObservable.ofType(Integer).map({it*2}).lift(new myOperator<T>()).map({"transformed by myOperator: " + it});
-
         snappy
                 .lift(new PutOperator("key1", "value1"))
-                .subscribe();
+                .subscribe(new Observer<SnappyDB>(){
+                    @Override
+                    public void onNext(SnappyDB s) {
+                        System.out.println(s);
+                    }
+                    @Override
+                    public void onError(Throwable t) {
+                        System.out.println("Reactive snappy has encountered an error!");
+                        t.printStackTrace();
+                    }
+                    @Override
+                    public void onCompleted() {
+                        System.out.println("Reactive snappy is completed!");
+                    }
+                });
 
         /*snappy
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
