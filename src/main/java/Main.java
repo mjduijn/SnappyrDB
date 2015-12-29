@@ -6,7 +6,7 @@ import rx.functions.Func1;
 import java.util.Map;
 
 public class Main {
-        
+
     public static void main(String [] args)
     {
         System.out.println("Running main");
@@ -126,6 +126,14 @@ public class Main {
                 System.out.println("Reactive snappy is completed!");
             }
         });
+
+
+        /*
+        //Verifying that PutOperator can't be used on arbitrary reactive streams
+        Observable.just("Only value")
+                .lift(new PutOperator("key", "value"))
+                .subscribe();
+         */
 
     }
 }
