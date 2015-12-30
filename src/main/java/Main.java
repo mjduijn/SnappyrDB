@@ -16,6 +16,26 @@ public class Main {
         SnappyrDB snappyrdb = new SnappyrDB(new Context());
 
         snappyrdb.query().put("Key2", "Value2").execute();
+
+        System.out.println();
+        snappyrdb.query().get("Key2", String.class)
+        .subscribe(new Observer<String>(){
+            @Override
+            public void onNext(String s) {
+                System.out.println(s);
+            }
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Snappyr has encountered an error!");
+                t.printStackTrace();
+            }
+            @Override
+            public void onCompleted() {
+                System.out.println("Snappyr has completed!");
+            }
+        });
+        System.out.println();
+
         snappyrdb.close();
 
 
@@ -137,7 +157,7 @@ public class Main {
             }
             @Override
             public void onCompleted() {
-                System.out.println("Reactive snappy is completed!");
+                System.out.println("Reactive snappy has completed!");
             }
         });
 

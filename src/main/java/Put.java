@@ -1,19 +1,25 @@
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 
+import java.io.ByteArrayOutputStream;
+
 import static org.fusesource.leveldbjni.JniDBFactory.bytes;
 
-public class PutOperator implements Operator<DB, DB> {
+public class Put implements Operator<DB, DB> {
     String key;
-    String value;
+    Object value;
+    Kryo kryo;
 
-    public PutOperator(String key, String value) {
-        System.out.println("Creating a new put operator");
+    public Put(String key, Object value) {
         this.key = key;
         this.value = value;
+        this.kryo = new Kryo();
+        kryo.register(value.getClass());
     }
 
     @Override
@@ -21,7 +27,6 @@ public class PutOperator implements Operator<DB, DB> {
         return new Subscriber<DB>(s) {
             @Override
             public void onCompleted() {
-                /* add your own onCompleted behavior here, or just pass the completed notification through: */
                 if(!s.isUnsubscribed()) {
                     s.onCompleted();
                 }
@@ -29,7 +34,6 @@ public class PutOperator implements Operator<DB, DB> {
 
             @Override
             public void onError(Throwable t) {
-        /* add your own onError behavior here, or just pass the error notification through: */
                 if(!s.isUnsubscribed()) {
                     s.onError(t);
                 }
@@ -37,13 +41,16 @@ public class PutOperator implements Operator<DB, DB> {
 
             @Override
             public void onNext(DB item) {
-        /* this example performs some sort of simple transformation on each incoming item and then passes it along */
                 if(!s.isUnsubscribed()) {
                     try {
-                        item.put(bytes(key), bytes(value));
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        Output output = new Output(stream);
+                        kryo.writeObject(output, value);
+                        output.close();
+                        item.put(bytes(key), stream.toByteArray());
                         s.onNext(item);
                     }
-                    catch(DBException e) {
+                    catch(Exception e) {
                         s.onError(e);
                     }
                 }
