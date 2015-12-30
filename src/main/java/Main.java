@@ -13,6 +13,14 @@ public class Main {
 
         Observable<SnappyDB> snappy = SnappyDBImpl.create(new Context());
 
+        SnappyrDB snappyrdb = new SnappyrDB(new Context());
+
+        snappyrdb.query().put("Key2", "Value2").execute();
+        snappyrdb.close();
+
+
+        /*
+        First attempt at a putoperator
         snappy
                 .lift(new PutOperator("key1", "value1"))
                 .subscribe(new Observer<SnappyDB>(){
@@ -30,6 +38,7 @@ public class Main {
                         System.out.println("Reactive snappy is completed!");
                     }
                 });
+         */
 
         /*snappy
                 .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
@@ -110,13 +119,6 @@ public class Main {
             });
 */
         snappy
-        .flatMap(new Func1<SnappyDB, Observable<SnappyDB>>() {
-            @Override
-            public Observable<SnappyDB> call(SnappyDB s) {
-//                return s.put("Tester1", "Tester1 second value");
-                return Observable.just(s);
-            }
-        })
         .flatMap(new Func1<SnappyDB, Observable<String>>() {
             @Override
             public Observable<String> call(SnappyDB s) {

@@ -1,3 +1,4 @@
+import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import rx.Observable;
 import rx.Observable.Operator;
@@ -5,7 +6,7 @@ import rx.Subscriber;
 
 import static org.fusesource.leveldbjni.JniDBFactory.bytes;
 
-public class PutOperator implements Operator<SnappyDB, SnappyDB> {
+public class PutOperator implements Operator<DB, DB> {
     String key;
     String value;
 
@@ -16,8 +17,8 @@ public class PutOperator implements Operator<SnappyDB, SnappyDB> {
     }
 
     @Override
-    public Subscriber<? super SnappyDB> call(final Subscriber<? super SnappyDB> s) {
-        return new Subscriber<SnappyDB>(s) {
+    public Subscriber<? super DB> call(final Subscriber<? super DB> s) {
+        return new Subscriber<DB>(s) {
             @Override
             public void onCompleted() {
                 /* add your own onCompleted behavior here, or just pass the completed notification through: */
@@ -35,11 +36,11 @@ public class PutOperator implements Operator<SnappyDB, SnappyDB> {
             }
 
             @Override
-            public void onNext(SnappyDB item) {
+            public void onNext(DB item) {
         /* this example performs some sort of simple transformation on each incoming item and then passes it along */
                 if(!s.isUnsubscribed()) {
                     try {
-                        item.put(key, value);
+                        item.put(bytes(key), bytes(value));
                         s.onNext(item);
                     }
                     catch(DBException e) {
