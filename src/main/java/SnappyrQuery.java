@@ -17,8 +17,6 @@ import java.util.Map;
 
 public class SnappyrQuery {
 
-    private Kryo kryo = new Kryo();
-
     private Observable<DB> db;
 
     public SnappyrQuery(DB db) {
@@ -28,15 +26,10 @@ public class SnappyrQuery {
         else {
             this.db = Observable.error(new NullPointerException("No database given to SnappyrQuery"));
         }
-
-        this.kryo = new Kryo();
     }
 
     protected SnappyrQuery(Observable<DB> prev) {
         this.db = prev;
-
-        this.kryo = new Kryo();
-        this.kryo.setAsmEnabled(true);
     }
 
     public SnappyrQuery query(Observable.Operator<DB, DB> operator) {
@@ -47,30 +40,7 @@ public class SnappyrQuery {
         return query(new Put(key, value));
     }
 
-    public void putKryo(final String key, String value) {
-        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        kryo.register(value.getClass());
-        Output output = new Output(stream);
-
-        try {
-            kryo.writeObject(output, value);
-            output.close();
-
-            db.subscribe(new Action1<DB>() {
-                             @Override
-                             public void call(DB entries) {
-                                 entries.put(key.getBytes(), stream.toByteArray());
-                             }
-                         });
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred, final Func1<byte[], Boolean> valuePred) {
+    public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred) {
         return db.flatMap(new Func1<DB, Observable<Map.Entry<String, byte[]>>>() {
             @Override
             public Observable<Map.Entry<String, byte[]>> call(DB entries) {
@@ -79,7 +49,7 @@ public class SnappyrQuery {
                             @Override
                             public Observable<Map.Entry<String, byte[]>> call(Map.Entry<byte[], byte[]> e) {
                                 String key = new String(e.getKey());
-                                if(keyPred.call(key) && valuePred.call(e.getValue())) {
+                                if(keyPred.call(key)) {
                                     return Observable.just((Map.Entry<String, byte[]>) new AbstractMap.SimpleEntry<>(key, e.getValue()));
                                 }
                                 else {
@@ -92,22 +62,14 @@ public class SnappyrQuery {
         });
     }
 
-    public Observable<String> getKey(final Func1<String, Boolean> keyPred, final Func1<byte[], Boolean> valuePred) {
-        return getKeyValue(keyPred, valuePred)
+    public Observable<String> getKey(final Func1<String, Boolean> keyPred) {
+        return getKeyValue(keyPred)
                 .map(new Func1<Map.Entry<String, byte[]>, String>() {
                     @Override
                     public String call(Map.Entry<String, byte[]> entry) {
                         return entry.getKey();
                     }
                 });
-    }
-    public Observable<String> getKey(final Func1<String, Boolean> keyPred) {
-        return getKey(keyPred, new Func1<byte[], Boolean>() {
-            @Override
-            public Boolean call(byte[] bs) {
-                return true;
-            }
-        });
     }
     public Observable<String> getKey() {
 
@@ -134,16 +96,13 @@ public class SnappyrQuery {
     }
 
     public <T> Observable<T> get(final String key, final Class<T> className) {
+        final Kryo kryo = new Kryo();
         return get(key).flatMap(new Func1<byte[], Observable<T>>() {
             @Override
             public Observable<T> call(byte[] bytes) {
                 Input input = new Input(bytes);
                 Observable<T> o = Observable.error(new KryoException());
                 try {
-//                    Kryo kryo = new Kryo();
-//                    kryo.register(String.class, 0);
-//                    String s = kryo.readObject(input, String.class);
-
                     kryo.register(className);
                     o = Observable.just(kryo.readObject(input, className));
                 }
@@ -156,6 +115,39 @@ public class SnappyrQuery {
             }
         });
     }
+
+    public Observable<byte[]> get(final Func1<String, Boolean> keyPred) {
+        return getKeyValue(keyPred)
+                .map(new Func1<Map.Entry<String, byte[]>, byte[]>() {
+                    @Override
+                    public byte[] call(Map.Entry<String, byte[]> stringEntry) {
+                        return stringEntry.getValue();
+                    }
+                });
+    }
+    public <T> Observable<T> get(final Func1<String, Boolean> keyPred, final Class<T> className) {
+        final Kryo kryo = new Kryo();
+        kryo.register(className);
+
+        return get(keyPred).flatMap(new Func1<byte[], Observable<T>>() {
+            @Override
+            public Observable<T> call(byte[] bytes) {
+                Input input = new Input(bytes);
+                Observable<T> o = Observable.error(new KryoException());
+                try {
+                    kryo.register(className);
+                    o = Observable.just(kryo.readObject(input, className));
+                }
+                catch (Exception e) {
+                    o = Observable.error(e);
+                } finally {
+                    input.close();
+                    return o;
+                }
+            }
+        });
+    }
+
 
     public Subscription execute(final Action1<? super DB> onNext, final Action1<Throwable> onError, final Action0 onComplete) {
         return db.subscribe(onNext, onError, onComplete);
