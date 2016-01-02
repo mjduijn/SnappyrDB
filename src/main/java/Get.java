@@ -37,10 +37,10 @@ public class Get implements Operator<Observable<Map.Entry<String, byte[]>>, DB> 
                 s.onNext(
                         Observable.create(new OnSubscribeFromSnappyDb(db))
                         .flatMap(new Func1<Map.Entry<byte[], byte[]>, Observable<Map.Entry<String, byte[]>>>() {
+                            //Filter and convert
                             @Override
                             public Observable<Map.Entry<String, byte[]>> call(Map.Entry<byte[], byte[]> e) {
                                 String key = new String(e.getKey());
-                                System.out.println("Key found: " + key);
                                 if(keyPred.call(key)) {
                                     return Observable.just((Map.Entry<String, byte[]>) new AbstractMap.SimpleEntry<>(key, e.getValue()));
                                 }
