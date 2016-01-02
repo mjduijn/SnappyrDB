@@ -1,3 +1,5 @@
+package snappyrdb;
+
 import org.iq80.leveldb.DB;
 import rx.Observable;
 

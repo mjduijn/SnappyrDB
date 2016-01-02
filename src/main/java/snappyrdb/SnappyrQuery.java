@@ -1,3 +1,5 @@
+package snappyrdb;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
@@ -8,6 +10,9 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import snappyrdb.operators.Delete;
+import snappyrdb.operators.Get;
+import snappyrdb.operators.Put;
 
 import java.util.Map;
 
@@ -20,7 +25,7 @@ public class SnappyrQuery {
             this.dbObs = Observable.just(dbObs);
         }
         else {
-            this.dbObs = Observable.error(new NullPointerException("No database given to SnappyrQuery"));
+            this.dbObs = Observable.error(new NullPointerException("No database given to snappyrdb.SnappyrQuery"));
         }
     }
 

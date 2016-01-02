@@ -1,3 +1,5 @@
+package snappyrdb;
+
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;
 import rx.Observable;
@@ -10,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Interface for creating an interable from the SnappyDb jni iterable
+ * Interface for creating an iterable from the SnappyDb jni iterable
  * Inspired by rx OnSubscribeFromIterable
  */
 public class OnSubscribeFromSnappyDb implements Observable.OnSubscribe<Map.Entry<byte[], byte[]>> {

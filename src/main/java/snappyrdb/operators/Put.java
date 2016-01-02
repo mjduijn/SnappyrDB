@@ -1,14 +1,27 @@
+package snappyrdb.operators;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
 import org.iq80.leveldb.DB;
+import org.iq80.leveldb.DBException;
+import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 
+import java.io.ByteArrayOutputStream;
+
 import static org.fusesource.leveldbjni.JniDBFactory.bytes;
 
-public class Delete implements Operator<DB, DB> {
+public class Put implements Operator<DB, DB> {
     String key;
+    Object value;
+    Kryo kryo;
 
-    public Delete(String key) {
+    public Put(String key, Object value) {
         this.key = key;
+        this.value = value;
+        this.kryo = new Kryo();
+        kryo.register(value.getClass());
     }
 
     @Override
@@ -32,7 +45,11 @@ public class Delete implements Operator<DB, DB> {
             public void onNext(DB item) {
                 if(!s.isUnsubscribed()) {
                     try {
-                        item.delete(bytes(key));
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        Output output = new Output(stream);
+                        kryo.writeObject(output, value);
+                        output.close();
+                        item.put(bytes(key), stream.toByteArray());
                         s.onNext(item);
                     }
                     catch(Exception e) {

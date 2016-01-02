@@ -1,8 +1,11 @@
+package snappyrdb.operators;
+
 import org.iq80.leveldb.DB;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
+import snappyrdb.OnSubscribeFromSnappyDb;
 
 import java.util.AbstractMap;
 import java.util.Map;
