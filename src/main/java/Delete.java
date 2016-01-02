@@ -1,12 +1,6 @@
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
 import org.iq80.leveldb.DB;
-import org.iq80.leveldb.DBException;
-import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
-
-import java.io.ByteArrayOutputStream;
 
 import static org.fusesource.leveldbjni.JniDBFactory.bytes;
 
