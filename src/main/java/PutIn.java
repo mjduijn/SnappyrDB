@@ -5,7 +5,6 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class PutIn implements Operator<SnappyrDB, Map.Entry<String, Object>> {
     SnappyrDB db;
