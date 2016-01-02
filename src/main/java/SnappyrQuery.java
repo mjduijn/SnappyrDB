@@ -29,16 +29,19 @@ public class SnappyrQuery {
         this.dbObs = prev;
     }
 
-    public SnappyrQuery query(Observable.Operator<DB, DB> operator) {
+    public SnappyrQuery lift(Observable.Operator<DB, DB> operator) {
         return new SnappyrQuery(dbObs.lift(operator));
+    }
+    public <T> Observable<T> query(Observable.Operator<T, DB> operator) {
+        return dbObs.lift(operator);
     }
 
     public SnappyrQuery put(String key, Object value) {
-        return query(new Put(key, value));
+        return lift(new Put(key, value));
     }
 
     public SnappyrQuery del(String key) {
-        return query(new Delete(key));
+        return lift(new Delete(key));
     }
 
     //Mother of all get multiple functions
