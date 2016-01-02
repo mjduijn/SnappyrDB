@@ -9,7 +9,6 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 public class SnappyrQuery {
@@ -46,26 +45,13 @@ public class SnappyrQuery {
 
     //Mother of all get multiple functions
     public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred) {
-        return dbObs.flatMap(new Func1<DB, Observable<Map.Entry<String, byte[]>>>() {
+        return this.query(new Get(keyPred))
+        .flatMap(new Func1<Observable<Map.Entry<String, byte[]>>, Observable<Map.Entry<String, byte[]>>>() {
             @Override
-            public Observable<Map.Entry<String, byte[]>> call(DB entries) {
-                return Observable.create(new OnSubscribeFromSnappyDb(entries))
-                        .flatMap(new Func1<Map.Entry<byte[], byte[]>, Observable<Map.Entry<String, byte[]>>>() {
-                            @Override
-                            public Observable<Map.Entry<String, byte[]>> call(Map.Entry<byte[], byte[]> e) {
-                                String key = new String(e.getKey());
-//                                System.out.println("Key found: " + key);
-                                if(keyPred.call(key)) {
-                                    return Observable.just((Map.Entry<String, byte[]>) new AbstractMap.SimpleEntry<>(key, e.getValue()));
-                                }
-                                else {
-                                    return Observable.empty();
-                                }
-                            }
-                        })
-                        ;
+            public Observable<Map.Entry<String, byte[]>> call(Observable<Map.Entry<String, byte[]>> entryObservable) {
+                return entryObservable;
             }
-        });
+        }); // Flatten
     }
 
     public Observable<String> getKey(final Func1<String, Boolean> keyPred) {
@@ -153,7 +139,4 @@ public class SnappyrQuery {
     public Subscription execute() {
         return dbObs.subscribe();
     }
-
-
-    //TODO verify args: keys may not be empty
 }
