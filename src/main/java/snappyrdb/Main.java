@@ -2,8 +2,12 @@ package snappyrdb;
 
 import rx.Observable;
 import rx.Observer;
+import rx.Scheduler;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.NewThreadScheduler;
+import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 import snappyrdb.operators.DeleteFrom;
 import snappyrdb.operators.Get;
 
@@ -145,6 +149,41 @@ public class Main {
         });
 
         System.out.println();
+
+        //////////////// Change threats ///////////
+
+        System.out.println("Thread # " + Thread.currentThread().getId() + " is running main");
+
+        snappyrdb.query()
+        .get("Key3", String.class)
+        .doOnNext(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println("Thread # " + Thread.currentThread().getId() + " is before observeon");
+            }
+        })
+        .subscribeOn(Schedulers.newThread())
+        .doOnNext(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println("Thread # " + Thread.currentThread().getId() + " is after observeon");
+            }
+        })
+        .subscribe(new Observer<String>(){
+            @Override
+            public void onNext(String s) {
+                System.out.println(s);
+            }
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Snappyr has encountered an error!");
+                t.printStackTrace();
+            }
+            @Override
+            public void onCompleted() {
+                System.out.println("Snappyr has completed!");
+            }
+        });
 
         //////////////// Empty database ///////////
         snappyrdb.query()

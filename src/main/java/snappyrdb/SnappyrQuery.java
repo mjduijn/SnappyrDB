@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Input;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -136,6 +137,13 @@ public class SnappyrQuery {
         });
     }
 
+    public SnappyrQuery subscribeOn(Scheduler scheduler) {
+        return new SnappyrQuery(this.dbObs.subscribeOn(scheduler));
+    }
+
+    public SnappyrQuery observeOn(Scheduler scheduler) {
+        return new SnappyrQuery(this.dbObs.observeOn(scheduler));
+    }
 
     public Subscription execute(final Action1<? super DB> onNext, final Action1<Throwable> onError, final Action0 onComplete) {
         return dbObs.subscribe(onNext, onError, onComplete);
