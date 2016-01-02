@@ -1,8 +1,6 @@
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.DefaultArraySerializers;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import rx.Observable;
@@ -11,37 +9,41 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
 import java.util.Map;
 
 public class SnappyrQuery {
 
-    private Observable<DB> db;
+    private Observable<DB> dbObs;
 
-    public SnappyrQuery(DB db) {
-        if(db != null) {
-            this.db = Observable.just(db);
+    public SnappyrQuery(DB dbObs) {
+        if(dbObs != null) {
+            this.dbObs = Observable.just(dbObs);
         }
         else {
-            this.db = Observable.error(new NullPointerException("No database given to SnappyrQuery"));
+            this.dbObs = Observable.error(new NullPointerException("No database given to SnappyrQuery"));
         }
     }
 
     protected SnappyrQuery(Observable<DB> prev) {
-        this.db = prev;
+        this.dbObs = prev;
     }
 
     public SnappyrQuery query(Observable.Operator<DB, DB> operator) {
-        return new SnappyrQuery(db.lift(operator));
+        return new SnappyrQuery(dbObs.lift(operator));
     }
 
     public SnappyrQuery put(String key, Object value) {
         return query(new Put(key, value));
     }
 
+    public SnappyrQuery del(String key) {
+        return query(new Delete(key));
+    }
+
+    //Mother of all get multiple functions
     public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred) {
-        return db.flatMap(new Func1<DB, Observable<Map.Entry<String, byte[]>>>() {
+        return dbObs.flatMap(new Func1<DB, Observable<Map.Entry<String, byte[]>>>() {
             @Override
             public Observable<Map.Entry<String, byte[]>> call(DB entries) {
                 return Observable.create(new OnSubscribeFromSnappyDb(entries))
@@ -49,6 +51,7 @@ public class SnappyrQuery {
                             @Override
                             public Observable<Map.Entry<String, byte[]>> call(Map.Entry<byte[], byte[]> e) {
                                 String key = new String(e.getKey());
+//                                System.out.println("Key found: " + key);
                                 if(keyPred.call(key)) {
                                     return Observable.just((Map.Entry<String, byte[]>) new AbstractMap.SimpleEntry<>(key, e.getValue()));
                                 }
@@ -71,18 +74,9 @@ public class SnappyrQuery {
                     }
                 });
     }
-    public Observable<String> getKey() {
-
-        return getKey(new Func1<String, Boolean>() {
-                    @Override
-                    public Boolean call(String s) {
-                        return true;
-                    }
-                });
-    }
 
     public Observable<byte[]> get(final String key) {
-        return db.flatMap(new Func1<DB, Observable<byte[]>>() {
+        return dbObs.flatMap(new Func1<DB, Observable<byte[]>>() {
             @Override
             public Observable<byte[]> call(DB entries) {
                 try {
@@ -150,11 +144,11 @@ public class SnappyrQuery {
 
 
     public Subscription execute(final Action1<? super DB> onNext, final Action1<Throwable> onError, final Action0 onComplete) {
-        return db.subscribe(onNext, onError, onComplete);
+        return dbObs.subscribe(onNext, onError, onComplete);
     }
 
     public Subscription execute() {
-        return db.subscribe();
+        return dbObs.subscribe();
     }
 
 
