@@ -2,12 +2,9 @@ package snappyrdb;
 
 import rx.Observable;
 import rx.Observer;
-import rx.Scheduler;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.schedulers.NewThreadScheduler;
 import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
 import snappyrdb.operators.DeleteFrom;
 import snappyrdb.operators.Get;
 
@@ -23,7 +20,7 @@ public class Main {
 
         SnappyrDB snappyrdb = new SnappyrDB(new Context());
 
-        snappyrdb.query().put("Key2", "Value2").execute();
+        snappyrdb.query().put("Key2", "Value2").subscribe();
 
         System.out.println();
         snappyrdb.query().get("Key2", String.class)
@@ -115,7 +112,7 @@ public class Main {
 
         snappyrdb.query()
         .del("array")
-        .execute();
+        .subscribe();
 
         System.out.println();
 
@@ -125,7 +122,7 @@ public class Main {
         snappyrdb.query()
         .put("Key3", "Value3")
         .put("Key4", "Value4")
-        .execute();
+        .subscribe();
 
         snappyrdb.query()
         .query(new Get(new Func1<String, Boolean>() {
@@ -150,7 +147,7 @@ public class Main {
 
         System.out.println();
 
-        //////////////// Change threats ///////////
+        //////////////// Change threads ///////////
 
         System.out.println("Thread # " + Thread.currentThread().getId() + " is running main");
 

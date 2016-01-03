@@ -37,7 +37,7 @@ public class DeleteFrom implements Operator<SnappyrDB, String> {
                 if (!s.isUnsubscribed()) {
                     db.query().
                     del(entries)
-                    .execute(new Action1<DB>() {
+                    .subscribe(new Action1<DB>() {
                                  @Override
                                  public void call(DB entries) {
                                      //Do nothing

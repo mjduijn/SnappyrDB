@@ -39,7 +39,7 @@ public class PutIn implements Operator<SnappyrDB, Map.Entry<String, Object>> {
                 if (!s.isUnsubscribed()) {
                     db.query()
                     .put(entries.getKey(), entries.getValue())
-                            .execute(new Action1<DB>() {
+                            .subscribe(new Action1<DB>() {
                                          @Override
                                          public void call(DB entries) {
                                              //Do nothing
