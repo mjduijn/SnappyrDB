@@ -1,8 +1,5 @@
 package snappyrdb;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoException;
-import com.esotericsoftware.kryo.io.Input;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import rx.*;
@@ -11,6 +8,7 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import snappyrdb.operators.Delete;
 import snappyrdb.operators.Get;
+import snappyrdb.operators.KryoConvertTo;
 import snappyrdb.operators.Put;
 
 import java.util.Map;
@@ -83,24 +81,8 @@ public class SnappyrQuery {
     }
 
     public <T> Observable<T> get(final String key, final Class<T> className) {
-        final Kryo kryo = new Kryo();
-        return get(key).flatMap(new Func1<byte[], Observable<T>>() {
-            @Override
-            public Observable<T> call(byte[] bytes) {
-                Input input = new Input(bytes);
-                Observable<T> o = Observable.error(new KryoException());
-                try {
-                    kryo.register(className);
-                    o = Observable.just(kryo.readObject(input, className));
-                }
-                catch (Exception e) {
-                    o = Observable.error(e);
-                } finally {
-                    input.close();
-                    return o;
-                }
-            }
-        });
+        return get(key)
+                .lift(new KryoConvertTo(className));
     }
 
     public Observable<byte[]> get(final Func1<String, Boolean> keyPred) {
@@ -113,26 +95,8 @@ public class SnappyrQuery {
                 });
     }
     public <T> Observable<T> get(final Func1<String, Boolean> keyPred, final Class<T> className) {
-        final Kryo kryo = new Kryo();
-        kryo.register(className);
-
-        return get(keyPred).flatMap(new Func1<byte[], Observable<T>>() {
-            @Override
-            public Observable<T> call(byte[] bytes) {
-                Input input = new Input(bytes);
-                Observable<T> o = Observable.error(new KryoException());
-                try {
-                    kryo.register(className);
-                    o = Observable.just(kryo.readObject(input, className));
-                }
-                catch (Exception e) {
-                    o = Observable.error(e);
-                } finally {
-                    input.close();
-                    return o;
-                }
-            }
-        });
+        return get(keyPred)
+            .lift(new KryoConvertTo(className));
     }
 
     public SnappyrQuery subscribeOn(Scheduler scheduler) {
