@@ -5,9 +5,7 @@ import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscription;
+import rx.*;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -145,11 +143,32 @@ public class SnappyrQuery {
         return new SnappyrQuery(this.dbObs.observeOn(scheduler));
     }
 
-    public Subscription execute(final Action1<? super DB> onNext, final Action1<Throwable> onError, final Action0 onComplete) {
+    public Subscription subscribe(final Action1<? super DB> onNext, final Action1<Throwable> onError, final Action0 onComplete) {
         return dbObs.subscribe(onNext, onError, onComplete);
     }
 
-    public Subscription execute() {
+    public Subscription subscribe(final Action1<Throwable> onError, final Action0 onComplete) {
+        return dbObs.subscribe(new Action1<DB>() {
+            @Override
+            public void call(DB entries) {
+                //do nothing
+            }
+        }, onError, onComplete);
+    }
+
+    public Subscription subscribe(final Action1<? super DB> onNext) {
+        return dbObs.subscribe(onNext);
+    }
+
+    public Subscription subscribe(Observer observer) {
+        return dbObs.subscribe(observer);
+    }
+
+    public Subscription subscribe(Subscriber subscriber) {
+        return dbObs.subscribe(subscriber);
+    }
+
+    public Subscription subscribe() {
         return dbObs.subscribe();
     }
 }
