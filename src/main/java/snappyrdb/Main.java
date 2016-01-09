@@ -205,11 +205,21 @@ public class Main {
         .put("Key4", "Value4")
         .subscribe();
 
-//        snappyrdb.query()
-//        .get("Key4", String.class)
-//        .lift(new AssignKey<String>("Key5"))
-//        .lift(new PutIn(snappyrdb))
-//        .subscribe();
+        snappyrdb.query()
+        .get("Key4", String.class)
+        .lift(new AssignKey<String>("Key5"))
+        .extend(new PutIn<String>(snappyrdb))
+        .subscribe();
+
+        //Retrieve dummy key value for validation purposes
+        snappyrdb.query()
+        .get("Key5", String.class)
+        .subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println("Key5 = " + s);
+            }
+        });
 
         //////////////// Empty database ///////////
         snappyrdb.query()

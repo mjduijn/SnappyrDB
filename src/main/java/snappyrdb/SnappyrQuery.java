@@ -48,12 +48,12 @@ public class SnappyrQuery {
     //Mother of all get multiple functions
     public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred) {
         return this.query(new Get(keyPred))
-        .flatMap(new Func1<Observable<Map.Entry<String, byte[]>>, Observable<Map.Entry<String, byte[]>>>() {
-            @Override
-            public Observable<Map.Entry<String, byte[]>> call(Observable<Map.Entry<String, byte[]>> entryObservable) {
-                return entryObservable;
-            }
-        }); // Flatten
+                .flatMap(new Func1<Observable<Map.Entry<String, byte[]>>, Observable<Map.Entry<String, byte[]>>>() {
+                    @Override
+                    public Observable<Map.Entry<String, byte[]>> call(Observable<Map.Entry<String, byte[]>> entryObservable) {
+                        return entryObservable;
+                    }
+                }); // Flatten
     }
 
     public Observable<String> getKey(final Func1<String, Boolean> keyPred) {
