@@ -26,7 +26,7 @@ public class SnappyrQuery {
         }
     }
 
-    protected SnappyrQuery(Observable<DB> prev) {
+    public SnappyrQuery(Observable<DB> prev) {
         this.dbObs = prev;
     }
 
@@ -39,7 +39,7 @@ public class SnappyrQuery {
 
     public SnappyrQuery put(String key, Object value) {
         return lift(new Put(key, value));
-    }
+    } //TODO work with T
 
     public SnappyrQuery del(String key) {
         return lift(new Delete(key));

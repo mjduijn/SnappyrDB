@@ -2,13 +2,18 @@ package snappyrdb;
 
 import rx.Observable;
 import rx.Observer;
+import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
+import snappyrdb.operators.AssignKey;
 import snappyrdb.operators.DeleteFrom;
 import snappyrdb.operators.Get;
+import snappyrdb.operators.PutIn;
 
 import java.math.BigDecimal;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,11 +27,22 @@ public class Main {
 
         snappyrdb.query().put("Key2", "Value2").subscribe();
 
+        ////////////////// PutIn //////////////
         System.out.println();
-        snappyrdb.query().get("Key2", String.class)
+        snappyrdb.query()
+        .get("Key2", String.class)
+        .map(new Func1<String, Map.Entry<String, String>>() {
+            @Override
+            public Map.Entry<String, String> call(String s) {
+                return new AbstractMap.SimpleEntry<>("Key2", "ValueReplaced");
+            }
+        })
+        .extend(new PutIn<String>(snappyrdb))
+        .get("Key2", String.class)
         .subscribe(new Observer<String>(){
             @Override
             public void onNext(String s) {
+                System.out.println("Found Key2");
                 System.out.println(s);
             }
             @Override
@@ -36,7 +52,7 @@ public class Main {
             }
             @Override
             public void onCompleted() {
-                System.out.println("Snappyr has completed!");
+                System.out.println("Weird snappyr has completed!");
             }
         });
 
@@ -181,6 +197,19 @@ public class Main {
                 System.out.println("Snappyr has completed!");
             }
         });
+
+        ////////////////// Get value and insert under new key ////////////////
+
+        //Insert dummy key value
+        snappyrdb.query()
+        .put("Key4", "Value4")
+        .subscribe();
+
+//        snappyrdb.query()
+//        .get("Key4", String.class)
+//        .lift(new AssignKey<String>("Key5"))
+//        .lift(new PutIn(snappyrdb))
+//        .subscribe();
 
         //////////////// Empty database ///////////
         snappyrdb.query()

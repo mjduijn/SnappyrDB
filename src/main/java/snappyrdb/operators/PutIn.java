@@ -1,15 +1,18 @@
 package snappyrdb.operators;
 
 import org.iq80.leveldb.DB;
-import rx.Observable.Operator;
+import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.subjects.ReplaySubject;
 import snappyrdb.SnappyrDB;
+import snappyrdb.SnappyrQuery;
 
 import java.util.Map;
 
-public class PutIn implements Operator<SnappyrDB, Map.Entry<String, Object>> {
+public class PutIn <T> implements Func1<Observable.OnSubscribe<Map.Entry<String, T>>, SnappyrQuery> {
     SnappyrDB db;
 
     public PutIn(SnappyrDB db) {
@@ -17,48 +20,43 @@ public class PutIn implements Operator<SnappyrDB, Map.Entry<String, Object>> {
     }
 
     @Override
-    public Subscriber<? super Map.Entry<String, Object>> call(final Subscriber<? super SnappyrDB> s) {
-        return new Subscriber<Map.Entry<String, Object>>(s) {
+    public SnappyrQuery call(final Observable.OnSubscribe<Map.Entry<String, T>> entryOnSubscribe) {
+
+        final ReplaySubject<DB> subj = ReplaySubject.create();
+        final SnappyrQuery query = new SnappyrQuery(subj);
+
+        entryOnSubscribe.call(new Subscriber<Map.Entry<String, T>>() {
+            final Subscriber<Map.Entry<String, T>> subscriber = this;
+
             @Override
             public void onCompleted() {
-                if (!s.isUnsubscribed()) {
-                    s.onNext(db); //Only passes on a single DB item
-                    s.onCompleted();
-                }
+                subj.onNext(db.getDb());
+                subj.onCompleted();
             }
 
             @Override
-            public void onError(Throwable t) {
-                if (!s.isUnsubscribed()) {
-                    s.onError(t);
-                }
+            public void onError(Throwable throwable) {
+                subj.onError(throwable);
+                subscriber.unsubscribe();
             }
 
             @Override
-            public void onNext(Map.Entry<String, Object> entries) {
-                if (!s.isUnsubscribed()) {
-                    db.query()
-                    .put(entries.getKey(), entries.getValue())
-                            .subscribe(new Action1<DB>() {
-                                         @Override
-                                         public void call(DB entries) {
-                                             //Do nothing
-                                         }
-                                     },
-                                    new Action1<Throwable>() {
-                                        @Override
-                                        public void call(Throwable throwable) {
-                                            s.onError(throwable);
-                                        }
-                                    },
-                                    new Action0() {
-                                        @Override
-                                        public void call() {
-                                            //Do nothing
-                                        }
-                                    });
-                }
+            public void onNext(Map.Entry<String, T> stringEntry) {
+                 query.put(stringEntry.getKey(), stringEntry.getValue())
+                .subscribe(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable e) {
+                        subj.onError(e);
+                        subscriber.unsubscribe();
+                    }
+                }, new Action0() {
+                    @Override
+                    public void call() {
+                        //Do nothing on completed of single query
+                    }
+                });
             }
-        };
+        });
+        return query;
     }
 }

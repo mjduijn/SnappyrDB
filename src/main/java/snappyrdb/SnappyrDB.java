@@ -40,4 +40,8 @@ public class SnappyrDB {
 
         }
     }
+
+    public DB getDb() {
+        return this.db;
+    }
 }
