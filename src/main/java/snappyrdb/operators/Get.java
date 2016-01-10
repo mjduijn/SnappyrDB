@@ -14,7 +14,6 @@ public class Get implements Operator<Observable<Map.Entry<String, byte[]>>, DB> 
     Func1<String, Boolean> keyPred;
 
     public Get(final Func1<String, Boolean> keyPred) {
-        System.out.println("Creating a new put operator");
         this.keyPred = keyPred;
     }
 
