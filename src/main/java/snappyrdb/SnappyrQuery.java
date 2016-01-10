@@ -71,7 +71,14 @@ public class SnappyrQuery {
             @Override
             public Observable<byte[]> call(DB entries) {
                 try {
-                    return Observable.just(entries.get(key.getBytes()));
+                    byte[] bytes = entries.get(key.getBytes());
+                    if(bytes != null) {
+                        return Observable.just(bytes);
+                    }
+                    else {
+                        System.out.println("Could not find key");
+                        return Observable.empty();
+                    }
                 }
                 catch (DBException e) {
                     return Observable.error(e);
