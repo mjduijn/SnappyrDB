@@ -2,11 +2,9 @@ package snappyrdb;
 
 import rx.Observable;
 import rx.Observer;
-import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
 import snappyrdb.operators.AssignKey;
 import snappyrdb.operators.DeleteFrom;
 import snappyrdb.operators.Get;

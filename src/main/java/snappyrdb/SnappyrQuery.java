@@ -37,7 +37,7 @@ public class SnappyrQuery {
         return dbObs.lift(operator);
     }
 
-    public SnappyrQuery put(String key, Object value) {
+    public <T> SnappyrQuery put(String key, T value) {
         return lift(new Put(key, value));
     } //TODO work with T
 
