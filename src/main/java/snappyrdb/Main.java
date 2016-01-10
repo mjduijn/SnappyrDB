@@ -7,9 +7,9 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import snappyrdb.operators.AssignKey;
-import snappyrdb.operators.DeleteFrom;
+import snappyrdb.extenders.DeleteFrom;
 import snappyrdb.operators.Get;
-import snappyrdb.operators.PutIn;
+import snappyrdb.extenders.PutIn;
 
 import java.math.BigDecimal;
 import java.util.AbstractMap;
