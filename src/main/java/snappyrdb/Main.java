@@ -2,6 +2,7 @@ package snappyrdb;
 
 import rx.Observable;
 import rx.Observer;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -217,9 +218,20 @@ public class Main {
             public void call(String s) {
                 System.out.println("Key5 = " + s);
             }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+
+            }
+        }, new Action0() {
+            @Override
+            public void call() {
+                System.out.println("Delete validation completed");
+            }
         });
 
         //////////////// Empty database ///////////
+        System.out.println();
         snappyrdb.query()
         .getKey(new Func1<String, Boolean>() {
             @Override
@@ -227,9 +239,29 @@ public class Main {
                 return true;
             }
         })
-        .lift(new DeleteFrom(snappyrdb))
-        .subscribe();
-
+        .extend(new DeleteFrom(snappyrdb))
+        .get(new Func1<String, Boolean>() {
+            @Override
+            public Boolean call(String s) {
+                return true;
+            }
+        }, String.class)
+        .subscribe(new Observer<String>(){
+            @Override
+            public void onNext(String s) {
+                System.out.println("Found Key (Bad)");
+                System.out.println(s);
+            }
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Snappyr has encountered an error!");
+                t.printStackTrace();
+            }
+            @Override
+            public void onCompleted() {
+                System.out.println("Delete all snappyr query has completed!");
+            }
+        });
         snappyrdb.close();
     }
 }
