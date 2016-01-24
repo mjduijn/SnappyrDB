@@ -52,7 +52,7 @@ public class PutIn <T> implements Func1<Observable.OnSubscribe<Map.Entry<String,
                 }, new Action0() {
                     @Override
                     public void call() {
-                        //Do nothing on completed of single query
+                        //Do nothing on completed of single lift
                     }
                 });
             }

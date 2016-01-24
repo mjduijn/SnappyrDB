@@ -30,24 +30,25 @@ public class SnappyrQuery {
         this.dbObs = prev;
     }
 
-    public SnappyrQuery lift(Observable.Operator<DB, DB> operator) {
-        return new SnappyrQuery(dbObs.lift(operator));
-    }
-    public <T> Observable<T> query(Observable.Operator<T, DB> operator) {
+    public <T> Observable<T> lift(Observable.Operator<T, DB> operator) {
         return dbObs.lift(operator);
     }
 
+    public SnappyrQuery query(Observable.Operator<DB, DB> operator) {
+        return new SnappyrQuery(this.lift(operator));
+    }
+
     public <T> SnappyrQuery put(String key, T value) {
-        return lift(new Put(key, value));
-    } //TODO work with T
+        return query(new Put(key, value));
+    }
 
     public SnappyrQuery del(String key) {
-        return lift(new Delete(key));
+        return query(new Delete(key));
     }
 
     //Mother of all get multiple functions
     public Observable<Map.Entry<String, byte[]>> getKeyValue(final Func1<String, Boolean> keyPred) {
-        return this.query(new Get(keyPred))
+        return this.lift(new Get(keyPred))
                 .flatMap(new Func1<Observable<Map.Entry<String, byte[]>>, Observable<Map.Entry<String, byte[]>>>() {
                     @Override
                     public Observable<Map.Entry<String, byte[]>> call(Observable<Map.Entry<String, byte[]>> entryObservable) {
