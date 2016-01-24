@@ -99,6 +99,11 @@ public class Main {
         });
 
         snappyrdb.query()
+        .put("DeletionKey", "DeletionValue")
+        .get("DeletionKey", String.class)
+        .subscribe((s) -> System.out.println(s), (e) -> e.printStackTrace(), () -> System.out.println("Demo query executed"));
+
+        snappyrdb.query()
         .del("DeletionKey")
         .get("DeletionKey", String.class)
         .subscribe(new Action1<String>() {
@@ -140,7 +145,7 @@ public class Main {
         .subscribe();
 
         snappyrdb.query()
-        .query(new Get(new Func1<String, Boolean>() {
+        .lift(new Get(new Func1<String, Boolean>() {
             @Override
             public Boolean call(String s) {
                 return true;
