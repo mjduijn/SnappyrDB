@@ -19,9 +19,7 @@ public class SnappyrDB {
             db = factory.open(file, context.getOptions());
         }
         catch (IOException e) {
-            db = null;
         }
-        //TODO properly propagate exception
     }
 
     public SnappyrDB(Context context) {
