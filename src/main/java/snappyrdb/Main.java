@@ -99,11 +99,6 @@ public class Main {
         });
 
         snappyrdb.query()
-        .put("DeletionKey", "DeletionValue")
-        .get("DeletionKey", String.class)
-        .subscribe((s) -> System.out.println(s), (e) -> e.printStackTrace(), () -> System.out.println("Demo query executed"));
-
-        snappyrdb.query()
         .del("DeletionKey")
         .get("DeletionKey", String.class)
         .subscribe(new Action1<String>() {
