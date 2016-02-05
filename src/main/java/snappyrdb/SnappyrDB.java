@@ -20,8 +20,9 @@ public class SnappyrDB {
         }
         catch (IOException e) {
             db = null;
+            System.out.println("Error opening db file");
+            e.printStackTrace();
         }
-        //TODO properly propagate exception
     }
 
     public SnappyrDB(Context context) {
@@ -37,7 +38,8 @@ public class SnappyrDB {
             db.close();
         }
         catch (IOException e) {
-
+            System.out.println("Error closing db");
+            e.printStackTrace();
         }
     }
 
