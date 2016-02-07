@@ -19,6 +19,7 @@ public class SnappyrDB {
             db = factory.open(file, context.getOptions());
         }
         catch (IOException e) {
+            System.out.println("Error opening db file");
         }
     }
 
@@ -35,7 +36,8 @@ public class SnappyrDB {
             db.close();
         }
         catch (IOException e) {
-
+            System.out.println("Error closing db");
+            e.printStackTrace();
         }
     }
 

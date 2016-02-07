@@ -88,6 +88,7 @@ public class SnappyrQuery {
         });
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Observable<T> get(final String key, final Class<T> className) {
         return get(key)
                 .lift(new KryoConvertTo(className));
@@ -102,6 +103,8 @@ public class SnappyrQuery {
                     }
                 });
     }
+
+    @SuppressWarnings("unchecked")
     public <T> Observable<T> get(final Func1<String, Boolean> keyPred, final Class<T> className) {
         return get(keyPred)
             .lift(new KryoConvertTo(className));
@@ -132,10 +135,12 @@ public class SnappyrQuery {
         return dbObs.subscribe(onNext);
     }
 
+    @SuppressWarnings("unchecked")
     public Subscription subscribe(Observer observer) {
         return dbObs.subscribe(observer);
     }
 
+    @SuppressWarnings("unchecked")
     public Subscription subscribe(Subscriber subscriber) {
         return dbObs.subscribe(subscriber);
     }
