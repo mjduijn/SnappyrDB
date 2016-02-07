@@ -265,9 +265,10 @@ SnappyDB
 
 
 SnappyDB
-//Get value from SnappyDB and perform action with it
-.get("Key1")                                                                    ;
-.doOnNext((s) -> {...} ) //Do actions
+//Get value from SnappyDB
+.get("Key1")                                                            ;           
+//Perform actions                                                        
+.doOnNext((s) -> {...} )
 .map((s) -> s + "_updated")                                                  ;
 //Put the updated value in the database   
 .put("Key1")                                                                    ;
