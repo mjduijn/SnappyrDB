@@ -11,8 +11,8 @@ snappyrdb.query()
 .take(5)
 .extend(new DeleteFrom(snappyrdb))
 .subscribe(
-	(error) -> {..}, 
-	() -> {..}
+	(error) -> {...}, 
+	() -> {...}
 )
 
 
